@@ -60,7 +60,7 @@ class Game:
         stone = board[from_idx].pop()
         board[to_idx].append(stone)
     
-    def dice(self,):
+    def dice(self):
         #hození kostky a vrácení hodnot
         dice = []
         dice1 = random.randint(1, 6)
@@ -71,7 +71,7 @@ class Game:
             dice = [dice1,dice2]
         return dice
 
-    def print_board():
+    def print_board(self):
         max_stones = max(len(point) for point in columns)
         rows = [""] * max_stones
         column_numbers = "ㅤㅤ".join([f"{i+1:2d}" for i in range(len(columns))])
@@ -140,10 +140,12 @@ class Game:
             take = columns[From].pop(len(columns[0])-1)
             take.AddStep()
             columns[To].append(take)
+            print(columns)
             #error při printboard odtud
             self.print_board()
 
     def play(self):
+            self.print_board()
             print("zadej1")
             From = int(input())
             print("zadej2")
@@ -154,7 +156,7 @@ class Game:
     #arr = copy.deepcopy(columns)
     
     #test printu
-    print_board()
+    #print_board()
     print(columns[0][len(columns[0])-1].char)
     #menu
 print('1 for PvP, 2 for PvAI, 3 for load')
