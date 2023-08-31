@@ -140,6 +140,7 @@ class Game:
             take = columns[From].pop(len(columns[0])-1)
             take.AddStep()
             columns[To].append(take)
+            #error při printboard odtud
             self.print_board()
 
     def play(self):
