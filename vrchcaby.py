@@ -6,6 +6,9 @@ class Stone:
     def __init__(self, Char):
         self.char = Char
     
+    def AddStep(args):
+     pass
+    
 class Player:
     #nějakej random pokus co sem zkusil netestovano
     def throw_dice():
@@ -13,13 +16,17 @@ class Player:
         print("Hozeno kostkou: ", dice)
 
 class ConsolePlayer(Player):
-    pass
+    def __init__(self, name):
+        self.name = name
 
 class AIPlayer(Player):
     pass
 
 class Game:
-   #layout hrací desky a pozice kamenu
+    def __init__(self):
+        pass
+    #layout hrací desky a pozice kamenu
+    global columns
     columns = [
             [Stone("O"),Stone("O")],
             [],
@@ -48,12 +55,12 @@ class Game:
 
     ]
 
-    def move_stone(board, from_idx, to_idx):
+    def move_stone(self, board, from_idx, to_idx):
         #pokus o pohyb - nezkoušeno
         stone = board[from_idx].pop()
         board[to_idx].append(stone)
     
-    def dice():
+    def dice(self,):
         #hození kostky a vrácení hodnot
         dice = []
         dice1 = random.randint(1, 6)
@@ -64,13 +71,13 @@ class Game:
             dice = [dice1,dice2]
         return dice
 
-    def print_board(board):
-        max_stones = max(len(point) for point in board)
+    def print_board():
+        max_stones = max(len(point) for point in columns)
         rows = [""] * max_stones
-        column_numbers = "ㅤㅤ".join([f"{i+1:2d}" for i in range(len(board))])
+        column_numbers = "ㅤㅤ".join([f"{i+1:2d}" for i in range(len(columns))])
         print(column_numbers)
 
-        for i, point in enumerate(board, start=1):
+        for i, point in enumerate(columns, start=1):
             for j in range(max_stones):
                 if j < len(point):
                     rows[j] += f"{point[j].char:^6s}"
@@ -81,7 +88,7 @@ class Game:
             print(row)
             print("-" * len(row))
 
-    def save(arr):
+    def save(self, arr):
         #save do json + převod do stringu aby se to dalo uložit
         array = copy.deepcopy(arr)
         i = 0
@@ -104,7 +111,7 @@ class Game:
         jsonFile.write(array)
         jsonFile.close()
 
-    def load():
+    def load(self):
         #loadovani json + převod zpět na objekty
         print("Loading....")
         f = open("save.json")
@@ -126,27 +133,41 @@ class Game:
         
         print("Loaded")
 
-    def play():
-        pass
-            
+    
+    
+    def move(self, From, To):
+        #if player.name == "Player 1":
+            take = columns[From].pop(len(columns[0])-1)
+            take.AddStep()
+            columns[To].append(take)
+            self.print_board()
+
+    def play(self):
+            print("zadej1")
+            From = int(input())
+            print("zadej2")
+            To = int(input())
+            self.move(From,To)
+
     #duplikovaní boardu prosave
     #arr = copy.deepcopy(columns)
-
-    #test printu
-    #print_board(columns)
-
-    #menu
-    print('1 for PvP, 2 for PvAI, 3 for load')
-    x = int(input())
     
-    if x == 1:
-        player1 = ConsolePlayer()
-        player2 = ConsolePlayer()
-        play()
-    if x == 2:
-        player1 = ConsolePlayer()
-        player2 = AIPlayer()
-        play()
-    if x == 3:
-        load()
+    #test printu
+    print_board()
+    print(columns[0][len(columns[0])-1].char)
+    #menu
+print('1 for PvP, 2 for PvAI, 3 for load')
+gamemode = int(input())
+Game = Game()
+    
+if gamemode == 1:
+    player1 = ConsolePlayer("Player 1")
+    player2 = ConsolePlayer("Player 2")
+    Game.play()
+if gamemode == 2:
+    player1 = ConsolePlayer("Player 1")
+    player2 = AIPlayer("PlayerAI")
+    Game.play()
+if gamemode == 3:
+    Game.load()
     
