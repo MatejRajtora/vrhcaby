@@ -8,17 +8,17 @@ class Stone:
     
     def AddStep(args):
      pass
+
+    def Taken(args):
+     pass
     
 class Player:
-    #nějakej random pokus co sem zkusil netestovano
-    def throw_dice():
-        dice = Game.dice()
-        print("Hozeno kostkou: ", dice)
+    def __init__(self, name, symbol):
+        self.name = name
+        self.symbol = symbol
 
 class ConsolePlayer(Player):
-    def __init__(self, name):
-        self.name = name
-
+    pass
 class AIPlayer(Player):
     pass
 
@@ -26,6 +26,11 @@ class Game:
     def __init__(self):
         pass
     #layout hrací desky a pozice kamenu
+    global gameover
+    gameover = False
+    global player
+    global player1
+    global player2
     global columns
     columns = [
             [Stone("O"),Stone("O")],
@@ -54,11 +59,12 @@ class Game:
             [Stone("X"),Stone("X")]
 
     ]
-
-    def move_stone(self, board, from_idx, to_idx):
-        #pokus o pohyb - nezkoušeno
-        stone = board[from_idx].pop()
-        board[to_idx].append(stone)
+        
+    def move_stone(self, From, To):
+        take = columns[From].pop(len(columns[0])-1)
+        take.AddStep()
+        columns[To].append(take)
+        self.check_win()
     
     def dice(self):
         #hození kostky a vrácení hodnot
@@ -133,44 +139,107 @@ class Game:
         
         print("Loaded")
 
+    def check_win(self):
+        pass
+    def switch_player(self, new_player):
+        global player
+        player = new_player
+
+    def move(self, From, To, player):
+        if player.name == "Player 1":
+            if columns[To] == []:
+                #if columns[To][0].char != player2.symbol:
+                        if columns[From] != []:
+                            if columns[From][len(columns[From])-1].char == player.symbol:
+                                self.move_stone(From, To)
+                                self.switch_player(player2)
+                                self.print_board()
+                            else:
+                                print("špatný kámen")
+                        else:
+                            print("Prázdný sloupec")
+
+            elif columns[To][0].char == player2.symbol and len(columns[To]) == 1 :
+                    taken = columns[To].pop(0)
+                    taken.Taken()
+                    if columns[From] != []:
+                            if columns[From][len(columns[From])-1].char == player.symbol:
+                                self.move_stone(From, To)
+                                self.switch_player(player2)
+                                self.print_board()
+                            else:
+                                print("špatný kámen")
+                    else:
+                            print("Prázdný sloupec")
+        else:
+            print("Neplatný tah")
+
+        if player.name in ("Player 2", "PlayerAI"):
+            if columns[To] == []:
+                #if columns[To][0].char != player2.symbol:
+                        if columns[From] != []:
+                            if columns[From][len(columns[From])-1].char == player.symbol:
+                                self.move_stone(From, To)
+                                self.switch_player(player1)
+                                self.print_board()
+                            else:
+                                print("špatný kámen")
+                        else:
+                            print("Prázdný sloupec")
+
+            elif columns[To][0].char == player1.symbol and len(columns[To]) == 1 :
+                    taken = columns[To].pop(0)
+                    taken.Taken()
+                    if columns[From] != []:
+                            if columns[From][len(columns[From])-1].char == player.symbol:
+                                self.move_stone(From, To)
+                                self.switch_player(player1)
+                                self.print_board()
+                            else:
+                                print("špatný kámen")
+                    else:
+                        print("Prázdný sloupec")
+        else:
+            print("Neplatný tah")
+        
     
-    
-    def move(self, From, To):
-        #if player.name == "Player 1":
-            take = columns[From].pop(len(columns[0])-1)
-            take.AddStep()
-            columns[To].append(take)
-            print(columns)
-            #error při printboard odtud
-            self.print_board()
 
     def play(self):
-            self.print_board()
-            print("zadej1")
-            From = int(input())
-            print("zadej2")
-            To = int(input())
-            self.move(From,To)
+        self.print_board()
+        while gameover == False:
+                print(player.name)
+                print("Odkud:")
+                From = int(input())-1
+                print("Kam:")
+                To = int(input())-1
+                if From < To:
+                    self.move(From,To, player)
+                else:
+                     print("Nemůžeš zpátky!")
 
     #duplikovaní boardu prosave
     #arr = copy.deepcopy(columns)
     
     #test printu
     #print_board()
-    print(columns[0][len(columns[0])-1].char)
+    #print(columns[0][len(columns[0])-1].char)
     #menu
 print('1 for PvP, 2 for PvAI, 3 for load')
 gamemode = int(input())
 Game = Game()
+
     
 if gamemode == 1:
-    player1 = ConsolePlayer("Player 1")
-    player2 = ConsolePlayer("Player 2")
+    player1 = ConsolePlayer("Player 1", "O")
+    player2 = ConsolePlayer("Player 2", "X")
+    player = player1
     Game.play()
+
 if gamemode == 2:
-    player1 = ConsolePlayer("Player 1")
-    player2 = AIPlayer("PlayerAI")
+    player1 = ConsolePlayer("Player 1", "O")
+    player2 = AIPlayer("PlayerAI", "X")
     Game.play()
+
 if gamemode == 3:
     Game.load()
     
