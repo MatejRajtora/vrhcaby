@@ -19,9 +19,15 @@ class Player:
         self.name = name
         self.symbol = symbol
         self.takenStones =[]
+        self.OutStones =[]
+
 
     def AddTakenStone(self, stone):
         self.takenStones.append(stone)
+
+    def AddOutStone(self, stone):
+        self.OutStones.append(stone)
+
 
 class ConsolePlayer(Player):
     pass
@@ -67,10 +73,9 @@ class Game:
     ]
         
     def move_stone(self, From, To):
-        take = columns[From].pop(len(columns[0])-1)
+        take = columns[From].pop(len(columns[From])-1)
         take.AddStep(From, To)
         columns[To].append(take)
-        self.check_win()
     
     def throw_dice(self):
         #hození kostky a vrácení hodnot
@@ -145,9 +150,8 @@ class Game:
         
         print("Loaded")
 
-    def check_win(self):
-        pass
 
+    
     def switch_player(self, new_player):
         global player
         player = new_player
@@ -166,9 +170,44 @@ class Game:
             print("Neplatný vhoz!")
             return False
 
-
+    def CheckMoveHelp(self, From, To):
+        if player.name == "Player 1":
+            if To > len(columns)-1:
+                positions = self.GetPlayerPositions()
+                i =0
+                while i < len(positions)-1:
+                        if i > len(columns)-7:
+                            i+=1
+                        else:
+                            return False
+                        if i == len(positions)-1:
+                            return True
+        if player.name in ("Player 2", "PlayerAI"):     
+            if To < 0:
+                    positions = self.GetPlayerPositions()
+                    i =0
+                    while i < 6:
+                            if i < 6:
+                                i+=1
+                            else:
+                                return False
+                            if i == 6:
+                                return True
+            
     def move(self, From, To, player):
         if player.name == "Player 1":
+            if To > len(columns)-1:
+                positions = self.GetPlayerPositions()
+                i =0
+                while i < len(positions)-1:
+                        if positions[i] > len(columns)-7:
+                            i+=1
+                        else:
+                            print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
+                            return False
+                        if i == len(positions)-1:
+                            player.OutStones.append(columns[From].pop(0))
+                    
             if columns[To] == []:
                 #if columns[To][0].char != player2.symbol:
                         if columns[From] != []:
@@ -211,6 +250,18 @@ class Game:
         
 
         if player.name in ("Player 2", "PlayerAI"):
+            if To < 0:
+                positions = self.GetPlayerPositions()
+                i =0
+                while i < 6:
+                        if positions[i] < 6:
+                            i+=1
+                        else:
+                            print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
+                            return False
+                        if i == 6:
+                            player.OutStones.append(columns[From].pop(0))
+                    
             if columns[To] == []:
                 #if columns[To][0].char != player2.symbol:
                         if columns[From] != []:
@@ -272,12 +323,16 @@ class Game:
                         return True
                     elif columns[position+throw][0].char == player.symbol:
                         return True
+                    elif self.CheckMoveHelp(position, position-throw):
+                        return True
                     elif columns[position+throw][0].char == "X" and columns[position+throw][1] is None:
                         return True
                 if player.symbol == "X":
                     if columns[position-throw] == []:
                         return True
                     elif columns[position-throw][0].char == player.symbol:
+                        return True
+                    elif self.CheckMoveHelp(position, position-throw):
                         return True
                     elif columns[position-throw][0].char == "O" and columns[position-throw][1] is None:
                         return True
@@ -287,7 +342,9 @@ class Game:
     def play(self):
         self.print_board()
         dices=[]
+        gameover = False
         while gameover == False:
+                
                 if dices == []:
                      hozeno = False
                 if hozeno ==False:
@@ -356,7 +413,7 @@ class Game:
                         if contain:      
 
                             if (player.name == "Player 1" and From < To) or (player.name in ("Player 2", "PlayerAI") and  From > To):
-
+                                
                                 if self.move(From,To, player):
                                     dices.remove(To2)
 
