@@ -76,6 +76,7 @@ class Game:
         take = columns[From].pop(len(columns[From])-1)
         take.AddStep(From, To)
         columns[To].append(take)
+        self.check_win()
     
     def throw_dice(self):
         #hození kostky a vrácení hodnot
@@ -150,8 +151,35 @@ class Game:
         
         print("Loaded")
 
+    def check_win(self):
+        if len(player1.OutStones) ==15:
+            return player1, True;
+        elif len(player2.OutStones) ==15:
+            return player2, True;
+        return None;
 
-    
+    def check_win_type(self, winner):
+        if winner.name == "Player 1":
+            if len(player2.OutStones) == 0 and len(player2.takenStones) > 0:
+                return "Backgammon"
+            elif len(player2.OutStones) == 0:
+                return "Gammon"
+            elif len(player2.OutStones) < 0:
+                return "Klasická"
+            else:
+                return "Neznámý typ výhry"
+        if winner.name == "Player 2":
+            if len(player1.OutStones) == 0 and len(player1.takenStones) > 0:
+                return "Backgammon"
+            elif len(player1.OutStones) == 0:
+                return "Gammon"
+            elif len(player1.OutStones) < 0:
+                return "Klasická"
+            else:
+                return "Neznámý typ výhry"
+
+            
+
     def switch_player(self, new_player):
         global player
         player = new_player
@@ -344,7 +372,19 @@ class Game:
         dices=[]
         gameover = False
         while gameover == False:
-                
+                win = self.check_win()
+                if win != None:
+                    winner, gameover = win()
+                    
+                    wintype = self.check_win_type(winner)
+                    print("___________________________")
+                    print("_________KONEC HRY_________")
+                    print("___________________________")
+                    print("__VÍTĚZ: ",winner.name,"___")
+                    print("__Typ výhry: ",wintype,"___")
+                    print("___________________________")
+                    gameover = True
+                    break 
                 if dices == []:
                      hozeno = False
                 if hozeno ==False:
