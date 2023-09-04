@@ -285,6 +285,7 @@ class Game:
                         if positions[i] < 6:
                             i+=1
                         else:
+                            
                             print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
                             return False
                         if i == 6:
@@ -394,6 +395,7 @@ class Game:
     def play(self):
         self.print_board()
         dices=[]
+        moves=[]
         gameover = False
         while gameover == False:
                 win = self.check_win()
@@ -457,11 +459,17 @@ class Game:
                                     
                     else:
                         if player.name == "PlayerAI":
-                            moves = self.GetValidMoves(dices)
+                            if moves==[]:
+                                moves = self.GetValidMoves(dices)
                             rand = random.randint(0, len(moves)-1)
                             move = moves[rand]
-                            self.move(move[0],move[1]-move[0], player)
-                            dices.remove(move[1])
+                            if move[1] in dices:
+                                if self.move(move[0],move[0]-move[1], player):
+                                    dices.remove(move[1])
+                                else:
+                                    moves.remove(move)
+                            else:
+                                    moves.remove(move)
                             if dices == []:
                                 self.switch_player(player1)
 
