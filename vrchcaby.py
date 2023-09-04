@@ -353,7 +353,7 @@ class Game:
                         return True
                     elif self.CheckMoveHelp(position, position-throw):
                         return True
-                    elif columns[position+throw][0].char == "X" and columns[position+throw][1] is None:
+                    elif columns[position+throw][0].char == "X" and len(columns[position+throw])==1:
                         return True
                 if player.symbol == "X":
                     if columns[position-throw] == []:
@@ -362,11 +362,35 @@ class Game:
                         return True
                     elif self.CheckMoveHelp(position, position-throw):
                         return True
-                    elif columns[position-throw][0].char == "O" and columns[position-throw][1] is None:
+                    elif columns[position-throw][0].char == "O" and len(columns[position-throw])==1:
                         return True
         return False
         
-        
+    def GetValidMoves(self, dices):
+        moves=[]
+        positions = self.GetPlayerPositions()
+        i =0
+        for position in positions:
+            for dice in dices:
+                if position-dice <0:
+                    while i < 6:
+                        if positions[i] < 6:
+                            i+=1
+                        else:
+                            break
+                        if i == 6:
+                            moves.append([position, dice])
+                if columns[position-dice] == []:
+                        moves.append([position, dice])
+                elif columns[position-dice][0].char == player.symbol:
+                        moves.append([position, dice])
+                elif self.CheckMoveHelp(position, position-dice):
+                        moves.append([position, dice])
+                elif columns[position-dice][0].char == "O" and len(columns[position-dice])==1:
+                        moves.append([position, dice])
+
+        return moves
+
     def play(self):
         self.print_board()
         dices=[]
@@ -402,6 +426,14 @@ class Game:
                         i=0
                         contain2 = False
 
+                        while contain == False and player.name == "PlayerAI":
+                            rand = random.randint(0, len(dices)-1);
+                            if self.Throw_stone(rand, player):
+                                print("PlayerAI položilo kámen na ", rand)
+                                contain2 = True
+                                dices.remove(Where)
+
+
                         while contain2 == False:
 
                             if Where == dices[i]:
@@ -413,7 +445,7 @@ class Game:
                                     if self.Throw_stone(Where2, player):
                                         dices.remove(Where)
 
-                                elif player.name in ("Player 2", "PlayerAI"):
+                                elif player.name in ("Player 2"):
 
                                     if self.Throw_stone(23-Where2, player):
                                         dices.remove(Where)
@@ -424,51 +456,61 @@ class Game:
                                 break
                                     
                     else:
+                        if player.name == "PlayerAI":
+                            moves = self.GetValidMoves(dices)
+                            rand = random.randint(0, len(moves)-1)
+                            move = moves[rand]
+                            self.move(move[0],move[1]-move[0], player)
+                            dices.remove(move[1])
+                            if dices == []:
+                                self.switch_player(player1)
 
-                        print("Odkud:")
-                        From = int(input())-1
-                        print("O kolik:")
-                        To = int(input())
-                        To2 = To
-                        i=0
-                        contain = False
 
-                        while contain == False:
-
-                            if To == dices[i]:
-                                contain=True
-
-                                if player.name in (("Player 2", "PlayerAI")):
-                                    To = From-To
-                                else:
-                                    To = From+To
-
-                            else:
-                                i+=1
-
-                            if i == len(dices):
-                                print("Špatně vybraný tah!")
-                                break
-
-                        if contain:      
-
-                            if (player.name == "Player 1" and From < To) or (player.name in ("Player 2", "PlayerAI") and  From > To):
-                                
-                                if self.move(From,To, player):
-                                    dices.remove(To2)
-
-                                if dices == [] and player.name =="Player 1":
-                                    self.switch_player(player2)
-                                    
-                                elif dices == [] and player.name in ("Player 2", "PlayerAI"):
-                                    self.switch_player(player1)
-
-                                else: 
-                                    continue
-                            else:
-                                print("Nemůžeš zpátky!")
                         else:
-                            print("Neplatný tah!")
+                            print("Odkud:")
+                            From = int(input())-1
+                            print("O kolik:")
+                            To = int(input())
+                            To2 = To
+                            i=0
+                            contain = False
+
+                            while contain == False:
+
+                                if To == dices[i]:
+                                    contain=True
+
+                                    if player.name in (("Player 2")):
+                                        To = From-To
+                                    else:
+                                        To = From+To
+
+                                else:
+                                    i+=1
+
+                                if i == len(dices):
+                                    print("Špatně vybraný tah!")
+                                    break
+
+                            if contain:      
+
+                                if (player.name == "Player 1" and From < To) or (player.name in ("Player 2", "PlayerAI") and  From > To):
+                                    
+                                    if self.move(From,To, player):
+                                        dices.remove(To2)
+
+                                    if dices == [] and player.name =="Player 1":
+                                        self.switch_player(player2)
+                                        
+                                    elif dices == [] and player.name in ("Player 2", "PlayerAI"):
+                                        self.switch_player(player1)
+
+                                    else: 
+                                        continue
+                                else:
+                                    print("Nemůžeš zpátky!")
+                            else:
+                                print("Neplatný tah!")
                 else:
                     if player.name == "Player 1":
                         print("Hozené neplatané tahy")
@@ -500,6 +542,7 @@ if gamemode == 1:
 if gamemode == 2:
     player1 = ConsolePlayer("Player 1", "O")
     player2 = AIPlayer("PlayerAI", "X")
+    player = player1
     Game.play()
 
 if gamemode == 3:
