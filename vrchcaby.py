@@ -1,6 +1,8 @@
 import json
 import copy
 import random
+from statistics import mean
+
 
 class Stone:
     def __init__(self, Char):
@@ -9,7 +11,11 @@ class Stone:
         self.takenOut = 0
     
     def AddStep(self, From, To):
-        self.steps.append(To-From)
+        if From < To:
+            self.steps.append(To-From)
+        else:
+            self.steps.append(From-To)
+             
 
     def Taken(self):
         self.takenOut+=1
@@ -27,12 +33,6 @@ class Player:
 
     def AddOutStone(self, stone):
         self.OutStones.append(stone)
-
-
-class ConsolePlayer(Player):
-    pass
-class AIPlayer(Player):
-    pass
 
 class Game:
     def __init__(self):
@@ -200,6 +200,7 @@ class Game:
         player = new_player
     
     def Throw_stone(self,To, player):
+        
         if columns[To] == []:
             columns[To].append(player.takenStones.pop(0))
             self.print_board()
@@ -260,6 +261,7 @@ class Game:
                                     print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
                                     return False
                         if i == len(positions)-1:
+                                    columns[From][len(columns[From])-1].AddStep(From,To)
                                     player.OutStones.append(columns[From].pop(len(columns[From])-1))
                                     self.print_board()
                                     return True
@@ -328,6 +330,7 @@ class Game:
                                     print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
                                     return False
                         if i == len(positions)-1:
+                                    columns[From][len(columns[From])-1].AddStep(From,To)
                                     player.OutStones.append(columns[From].pop(len(columns[From])-1))
                                     self.print_board()
                                     return True
@@ -470,11 +473,86 @@ class Game:
                         moves.append([position, dice])
 
         return moves
+    
+    def GetStats(self):
+
+        p1moves = 0
+        p1out = 0
+        p1steps = []
+
+        p2moves = 0
+        p2out = 0
+        p2steps = []
+
+
+        p1 = copy.copy(player1.OutStones)
+        p1.append(player1.takenStones)
+        p2 = copy.copy(player2.OutStones)
+        p2.append(player2.takenStones)
+         
+        for column in columns:
+            for stone in column:
+                if stone.char == "O":
+                    p1.append(stone)
+                elif stone.char == "X":
+                    p2.append(stone)
+                     
+                
+        p1.pop(len(p1)-1)
+        p2.pop(0)
+
+        for stone in p1:
+            i=0
+            while i < len(stone.steps)-1:
+                 p1moves +=1
+                 i+=1
+            j = 0     
+            while j < stone.takenOut:
+                 p1out +=1
+                 j+=1
+            k=0
+            while k < len(stone.steps):
+                p1steps.append(stone.steps[k])
+                k+=1
+
+        for stone in p2:
+            i=0
+            while i< len(stone.steps):
+                 p2moves +=1
+                 i+=1
+            j = 0     
+            while j < stone.takenOut:
+                 p2out +=1
+                 j+=1
+            p2steps.append(stone.steps)
+
+
+        stats = {
+              "p1moves": p1moves,
+              "p1out": p1out,
+              "p2moves": p2moves,
+              "p2out": p2out
+        }
+        self.printStats(stats)
+         
+    def printStats(self, stats):
+         print(player1.name, "Statistiky")
+         print("Počet tahů: ", stats["p1moves"])
+         print("Počet vyhozených kamenů: ", stats["p1out"])
+         print("Životnost kamene na tahy: ", stats["p1moves"]/stats["p1out"])
+         print("__________________________")
+         print(player2.name, "Statistiky")
+         print("Počet tahů: ", stats["p2moves"])
+         print("Počet vyhozených kamenů: ", stats["p2out"])
+         print("Životnost kamene na tahy: ", stats["p2moves"]/stats["p2out"])
+
+
 
     def play(self):
         self.print_board()
         dices=[]
         moves=[]
+        hozeno = False
         gameover = False
         while gameover == False:
                 win = self.check_win()
@@ -488,6 +566,7 @@ class Game:
                     print("\nVÍTĚZ: ",winner.name)
                     print("Typ výhry: ",wintype)
                     print("___________________________")
+                    self.GetStats()
                     gameover = True
                     break 
                 if dices == []:
