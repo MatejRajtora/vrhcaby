@@ -711,22 +711,22 @@ Game = Game()
 
     
 if gamemode == 1:
-    player1 = ConsolePlayer("Player 1", "O")
-    player2 = ConsolePlayer("Player 2", "X")
+    player1 = Player("Player 1", "O")
+    player2 = Player("Player 2", "X")
     player = player1
     Game.play()
 
 if gamemode == 2:
-    player1 = ConsolePlayer("Player 1", "O")
-    player2 = AIPlayer("PlayerAI", "X")
+    player1 = Player("Player 1", "O")
+    player2 = Player("PlayerAI", "X")
     player = player1
     Game.play()
 
 if gamemode == 3:
     data = Game.load()
     columns = data[0]
-    player1 = ConsolePlayer("Player 1", "O")
-    player2 = ConsolePlayer(data[1]["player2"], "X")
+    player1 = Player("Player 1", "O")
+    player2 = Player(data[1]["player2"], "X")
 
     player1.takenStones = data[1]["player1taken"]
     player1.OutStones = data[1]["player1out"]
