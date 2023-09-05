@@ -41,8 +41,13 @@ class Game:
     global gameover
     gameover = False
     global player
+    player = None
     global player1
+    player1 = None
+
     global player2
+    player2 = None
+
     global columns
     columns = [
             [Stone("O"),Stone("O")],
@@ -109,9 +114,18 @@ class Game:
     def save(self, arr):
         #save do json + převod do stringu aby se to dalo uložit
         array = copy.deepcopy(arr)
+        jsdata = {
+            "board": array,
+            "player": player.name,
+            "player1taken": player1.takenStones,
+            "player1out": player1.OutStones,
+            "player2": player2.name,
+            "player2taken": player2.takenStones,
+            "player2out": player2.OutStones
+        }
         i = 0
         j = 0
-        print("Saving....")
+        print("Ukládání....")
         while i < len(array):
             while j < len(array[i]):
                 if array[i][j].char == "O":
@@ -123,20 +137,20 @@ class Game:
                 j+=1
             i+=1
             j=0
-        print("Saved!")
-        array = json.dumps(array)
+        print("Uloženo!")
+        jsdata = json.dumps(jsdata)
         jsonFile = open("save.json", "w")
-        jsonFile.write(array)
+        jsonFile.write(jsdata)
         jsonFile.close()
 
     def load(self):
         #loadovani json + převod zpět na objekty
-        print("Loading....")
+        print("Nahrávání....")
         f = open("save.json")
-        array = json.load(f)
+        jsdata = json.load(f)
         i = 0
         j = 0
-        print(array)
+        array = jsdata["board"]
         while i < len(array):
             while j < len(array[i]):
                 if array[i][j] == "O":
@@ -148,8 +162,9 @@ class Game:
                 j+=1
             i+=1
             j=0
-        
-        print("Loaded")
+
+        return [array, jsdata]
+
 
     def check_win(self):
         if len(player1.OutStones) ==15:
@@ -195,9 +210,9 @@ class Game:
             return True
         elif    columns[To][0].char != player.symbol and len(columns[To]) ==1:
             if player.name =="Player 1":
-                player2.takenStones.append(columns.pop(To))
+                player2.takenStones.append(columns.pop(len(columns[To])-1))
             elif player.name in ("Player 2", "PlayerAI"):
-                player1.takenStones.append(columns.pop(To))
+                player1.takenStones.append(columns.pop(len(columns[To])-1))
 
             columns[To].append(player.takenStones.pop(0))
             
@@ -245,7 +260,7 @@ class Game:
                                     print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
                                     return False
                         if i == len(positions)-1:
-                                    player.OutStones.append(columns[From].pop(0))
+                                    player.OutStones.append(columns[From].pop(len(columns[From])-1))
                                     self.print_board()
                                     return True
                         else:
@@ -278,7 +293,7 @@ class Game:
                     return True
             
             elif columns[To][0].char == player2.symbol and len(columns[To]) == 1 :
-                    taken = columns[To].pop(0)
+                    taken = columns[To].pop(len(columns[To])-1)
                     taken.Taken()
                     player2.AddTakenStone(taken)
                     if columns[From] != []:
@@ -313,7 +328,7 @@ class Game:
                                     print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
                                     return False
                         if i == len(positions)-1:
-                                    player.OutStones.append(columns[From].pop(0))
+                                    player.OutStones.append(columns[From].pop(len(columns[From])-1))
                                     self.print_board()
                                     return True
                         else:
@@ -346,7 +361,7 @@ class Game:
                     return True
 
             elif columns[To][0].char == player1.symbol and len(columns[To]) == 1 :
-                    taken = columns[To].pop(0)
+                    taken = columns[To].pop(len(columns[From])-1)
                     taken.Taken()
                     player1.AddTakenStone(taken)
                     if columns[From] != []:
@@ -483,7 +498,10 @@ class Game:
 
                 print("Na řadě je: ", player.name," (", player.symbol, ")")
                 print("Máš vyhozeno ",len(player.takenStones), " kamenů")
-                print(f"Kostka hodila/Dostupné tahy: ", dices)
+                print("Máš vyvedeno ",len(player.OutStones), " kamenů")
+
+                print(f"Kostka hodila", dices)
+                print( "Možné tahy: ", self.GetValidMoves(dices))
                 if self.CheckMove(dices):
                     
                     if len(player.takenStones) > 0:
@@ -542,7 +560,13 @@ class Game:
 
                         else:
                             print("Odkud:")
-                            From = int(input())-1
+                            From = input()
+                            if From =="ulozit":
+                                 self.save(columns)
+                                 print("Odkud:")
+                                 From = int(input())-1
+                            else:
+                                 From = int(From)-1
                             print("O kolik:")
                             To = int(input())
                             To2 = To
@@ -602,7 +626,7 @@ class Game:
     #print_board()
     #print(columns[0][len(columns[0])-1].char)
     #menu
-print('1 for PvP, 2 for PvAI, 3 for load')
+print('1 pro PvP, 2 pro PvAI, 3 pro načtení uložené hry')
 gamemode = int(input())
 Game = Game()
 
@@ -620,5 +644,24 @@ if gamemode == 2:
     Game.play()
 
 if gamemode == 3:
-    Game.load()
+    data = Game.load()
+    columns = data[0]
+    player1 = ConsolePlayer("Player 1", "O")
+    player2 = ConsolePlayer(data[1]["player2"], "X")
+
+    player1.takenStones = data[1]["player1taken"]
+    player1.OutStones = data[1]["player1out"]
+
+    player2.OutStones = data[1]["player2out"]
+    player2.takenStones = data[1]["player2taken"]
+
+    if data[1]["player"] == "Player 1":
+            player = player1
+
+    elif data[1]["player"] in ("Player 2", "PlayerAI"):
+            player = player2
+
+    print("Nahráno")
+
+    Game.play()
     
