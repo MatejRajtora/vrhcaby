@@ -209,8 +209,8 @@ class Game:
             columns[To].append(player.takenStones.pop(0))
             self.print_board()
             return True
-        elif    columns[To][0].char != player.symbol and len(columns[To]) ==1:
-            if player.name =="Player 1":
+        elif columns[To][0].char != player.symbol and len(columns[To]) == 1:
+            if player.name == "Player 1":
                 player2.takenStones.append(columns.pop(len(columns[To])-1))
             elif player.name in ("Player 2", "PlayerAI"):
                 player1.takenStones.append(columns.pop(len(columns[To])-1))
