@@ -193,8 +193,17 @@ class Game:
             columns[To].append(player.takenStones.pop(0))
             self.print_board()
             return True
+        elif    columns[To][0].char != player.symbol and len(columns[To]) ==1:
+            if player.name =="Player 1":
+                player2.takenStones.append(columns.pop(To))
+            elif player.name in ("Player 2", "PlayerAI"):
+                player1.takenStones.append(columns.pop(To))
 
-        elif columns[To][0].char != player.symbol:
+            columns[To].append(player.takenStones.pop(0))
+            
+            self.print_board()
+            return True
+        elif columns[To][1].char != player.symbol:
             print("Neplatný vhoz!")
             return False
 
@@ -224,17 +233,30 @@ class Game:
             
     def move(self, From, To, player):
         if player.name == "Player 1":
-            if To > len(columns)-1:
-                positions = self.GetPlayerPositions()
-                i =0
-                while i < len(positions)-1:
-                        if positions[i] > len(columns)-7:
-                            i+=1
-                        else:
-                            print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
-                            return False
+            if To > len(columns)-1 and columns[From][0].char == "O":
+                if columns[From] != []:
+                    if columns[From][len(columns[From])-1].char == player.symbol:
+                        positions = self.GetPlayerPositions()
+                        i =0
+                        while i < len(positions)-1:
+                                if positions[i] > len(columns)-7:
+                                    i+=1
+                                else:
+                                    print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
+                                    return False
                         if i == len(positions)-1:
-                            player.OutStones.append(columns[From].pop(0))
+                                    player.OutStones.append(columns[From].pop(0))
+                                    self.print_board()
+                                    return True
+                        else:
+                             return False
+                    else:
+                                print("špatný kámen")
+                                return False
+                else:
+                  
+                    print("Prázdný sloupec")
+                    return False
                     
             if columns[To] == []:
                 #if columns[To][0].char != player2.symbol:
@@ -278,18 +300,31 @@ class Game:
         
 
         if player.name in ("Player 2", "PlayerAI"):
-            if To < 0:
-                positions = self.GetPlayerPositions()
-                i =0
-                while i < 6:
-                        if positions[i] < 6:
-                            i+=1
+            if To < 0 and columns[From][0].char == "X":
+                if columns[From] != []:
+                    if columns[From][len(columns[From])-1].char == player.symbol:
+                        positions = self.GetPlayerPositions()
+                        i =0
+                        while i < len(positions)-1:
+                                if positions[i] < 6:
+                                    i+=1
+                                else:
+                                    
+                                    print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
+                                    return False
+                        if i == len(positions)-1:
+                                    player.OutStones.append(columns[From].pop(0))
+                                    self.print_board()
+                                    return True
                         else:
-                            
-                            print("Nemůžeš vyvádět, dostaň všechny kameny do poslední části")
-                            return False
-                        if i == 6:
-                            player.OutStones.append(columns[From].pop(0))
+                             return False
+                    else:
+                                print("špatný kámen")
+                                return False
+                else:
+                  
+                    print("Prázdný sloupec")
+                    return False
                     
             if columns[To] == []:
                 #if columns[To][0].char != player2.symbol:
@@ -348,16 +383,44 @@ class Game:
         for position in positions:
             for throw in dice:
                 if player.symbol == "O":
-                    if columns[position+throw] == []:
+                    if position+throw>len(columns)-1:
+                        
+                        for pos in positions:
+                            for dic in dice:
+                                i =0
+                                if pos+dic >len(columns)-1:
+                                    while i < len(positions):
+                                        if positions[i] > len(columns)-7:
+                                            i+=1
+                                        else:
+                                            break
+                                        if i == len(positions):
+                                            return True
+                        return False
+                         
+                    elif columns[position+throw] == []:
                         return True
                     elif columns[position+throw][0].char == player.symbol:
                         return True
-                    elif self.CheckMoveHelp(position, position-throw):
+                    elif self.CheckMoveHelp(position, position+throw):
                         return True
                     elif columns[position+throw][0].char == "X" and len(columns[position+throw])==1:
                         return True
                 if player.symbol == "X":
-                    if columns[position-throw] == []:
+                    if position+throw>len(columns)-1:
+                        for pos in positions:
+                            for dic in dice:
+                                i =0
+                                if pos-dic <0:
+                                    while i < len(positions):
+                                        if positions[i] < 6:
+                                            i+=1
+                                        else:
+                                            break
+                                        if i == len(positions):
+                                            return True
+                        return False
+                    elif not columns[position-throw] or columns[position-throw] == []:
                         return True
                     elif columns[position-throw][0].char == player.symbol:
                         return True
@@ -370,9 +433,10 @@ class Game:
     def GetValidMoves(self, dices):
         moves=[]
         positions = self.GetPlayerPositions()
-        i =0
+
         for position in positions:
             for dice in dices:
+                i =0
                 if position-dice <0:
                     while i < 6:
                         if positions[i] < 6:
@@ -400,14 +464,14 @@ class Game:
         while gameover == False:
                 win = self.check_win()
                 if win != None:
-                    winner, gameover = win()
+                    winner, gameover = win
                     
                     wintype = self.check_win_type(winner)
                     print("___________________________")
                     print("_________KONEC HRY_________")
                     print("___________________________")
-                    print("__VÍTĚZ: ",winner.name,"___")
-                    print("__Typ výhry: ",wintype,"___")
+                    print("\nVÍTĚZ: ",winner.name)
+                    print("Typ výhry: ",wintype)
                     print("___________________________")
                     gameover = True
                     break 
@@ -423,17 +487,19 @@ class Game:
                 if self.CheckMove(dices):
                     
                     if len(player.takenStones) > 0:
-                        print("Kam chceš položit kámen")
-                        Where = int(input())
-                        i=0
-                        contain2 = False
-
                         while contain == False and player.name == "PlayerAI":
                             rand = random.randint(0, len(dices)-1);
                             if self.Throw_stone(rand, player):
                                 print("PlayerAI položilo kámen na ", rand)
                                 contain2 = True
                                 dices.remove(Where)
+                        if player.name in ("Player 1", "Player 2"):
+                            print("Kam chceš položit kámen")
+                            Where = int(input())
+                            i=0
+                            contain2 = False
+
+                        
 
 
                         while contain2 == False:
