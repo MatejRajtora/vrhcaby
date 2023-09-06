@@ -114,15 +114,6 @@ class Game:
     def save(self, arr):
         #save do json + převod do stringu aby se to dalo uložit
         array = copy.deepcopy(arr)
-        jsdata = {
-            "board": array,
-            "player": player.name,
-            "player1taken": player1.takenStones,
-            "player1out": player1.OutStones,
-            "player2": player2.name,
-            "player2taken": player2.takenStones,
-            "player2out": player2.OutStones
-        }
         i = 0
         j = 0
         print("Ukládání....")
@@ -137,6 +128,16 @@ class Game:
                 j+=1
             i+=1
             j=0
+            
+        jsdata = {
+            "board": array,
+            "player": player.name,
+            "player1taken": player1.takenStones,
+            "player1out": player1.OutStones,
+            "player2": player2.name,
+            "player2taken": player2.takenStones,
+            "player2out": player2.OutStones
+        }
         print("Uloženo!")
         jsdata = json.dumps(jsdata)
         jsonFile = open("save.json", "w")
