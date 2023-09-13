@@ -128,7 +128,7 @@ class Game:
                 j+=1
             i+=1
             j=0
-            
+
         jsdata = {
             "board": array,
             "player": player.name,
@@ -138,6 +138,7 @@ class Game:
             "player2taken": player2.takenStones,
             "player2out": player2.OutStones
         }
+        
         print("Uloženo!")
         jsdata = json.dumps(jsdata)
         jsonFile = open("save.json", "w")
@@ -581,7 +582,11 @@ class Game:
                 print("Máš vyvedeno ",len(player.OutStones), " kamenů")
 
                 print(f"Kostka hodila", dices)
-                print( "Možné tahy: ", self.GetValidMoves(dices))
+                validmoves = []
+                for move in self.GetValidMoves(dices):
+                     move[0]= move[0]+1
+                     validmoves.append(move)
+                print( "Možné tahy: ", validmoves)
                 if self.CheckMove(dices):
                     
                     if len(player.takenStones) > 0:
