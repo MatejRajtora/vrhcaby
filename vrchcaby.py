@@ -78,6 +78,7 @@ class Game:
     ]
         
     def move_stone(self, From, To):
+        #Přesun kamenu + zkontrolovaní stavu hry check win
         take = columns[From].pop(len(columns[From])-1)
         take.AddStep(From, To)
         columns[To].append(take)
@@ -95,18 +96,22 @@ class Game:
         return dice
 
     def print_board(self):
+        #výpis hrací desky do konzole
         max_stones = max(len(point) for point in columns)
+        #vytvoření řádků
         rows = [""] * max_stones
+        #číslování 
         column_numbers = "ㅤㅤ".join([f"{i+1:2d}" for i in range(len(columns))])
+        #výpis čísel
         print(column_numbers)
-
+        
         for i, point in enumerate(columns, start=1):
             for j in range(max_stones):
                 if j < len(point):
                     rows[j] += f"{point[j].char:^6s}"
                 else:
                     rows[j] += " " * 6
-
+        #výpis kamenů 
         for row in rows:
             print(row)
             print("-" * len(row))
@@ -128,7 +133,7 @@ class Game:
                 j+=1
             i+=1
             j=0
-
+        #json format dat
         jsdata = {
             "board": array,
             "player": player.name,
@@ -138,12 +143,13 @@ class Game:
             "player2taken": player2.takenStones,
             "player2out": player2.OutStones
         }
-        
-        print("Uloženo!")
+        #prace se souborem
         jsdata = json.dumps(jsdata)
         jsonFile = open("save.json", "w")
         jsonFile.write(jsdata)
         jsonFile.close()
+        print("Uloženo!")
+
 
     def load(self):
         #loadovani json + převod zpět na objekty
@@ -164,11 +170,12 @@ class Game:
                 j+=1
             i+=1
             j=0
-
+        #vracení hraci desky a zbytek dat
         return [array, jsdata]
 
 
     def check_win(self):
+        #zkontrolovaní zda má hráč vyvedeno 15 kamenů
         if len(player1.OutStones) ==15:
             return player1, True;
         elif len(player2.OutStones) ==15:
@@ -176,6 +183,7 @@ class Game:
         return None;
 
     def check_win_type(self, winner):
+        #kontrola typu výhry
         if winner.name == "Player 1":
             if len(player2.OutStones) == 0 and len(player2.takenStones) > 0:
                 return "Backgammon"
@@ -198,11 +206,12 @@ class Game:
             
 
     def switch_player(self, new_player):
+        #prohození momentálního hráče
         global player
         player = new_player
     
     def Throw_stone(self,To, player):
-        
+        #vhození kamenu zpátky do hry
         if columns[To] == []:
             columns[To].append(player.takenStones.pop(0))
             self.print_board()
@@ -226,6 +235,7 @@ class Game:
             return False
 
     def CheckMoveHelp(self, From, To):
+        #pomoc při pohybu při zadání mimo desku kontorla zda má hráč všechny kameny v poslením segmentu
         if player.name == "Player 1":
             if To > len(columns)-1:
                 positions = self.GetPlayerPositions()
@@ -250,6 +260,7 @@ class Game:
                                 return True
             
     def move(self, From, To, player):
+        #pohyb podmínky pro pohyb, etc
         if player.name == "Player 1":
             if To > len(columns)-1 and columns[From][0].char == "O":
                 if columns[From] != []:
@@ -388,6 +399,8 @@ class Game:
                 return False
 
     def GetPlayerPositions(self):
+
+        # získání a vrácení indexu pozic kamenů hráče
         positions = [] 
 
         for idx, column in enumerate(columns):
@@ -398,6 +411,7 @@ class Game:
         return positions
     
     def CheckMove(self, dice):
+        #zkontrolovaní pohybu hráče
         positions = self.GetPlayerPositions()
 
         for position in positions:
@@ -451,6 +465,7 @@ class Game:
         return False
         
     def GetValidMoves(self, dices):
+        # získní možnách tahů
         moves=[]
         positions = self.GetPlayerPositions()
 
@@ -477,6 +492,7 @@ class Game:
         return moves
     
     def GetStats(self):
+        #získání statistik kamenů a spojení 
 
         p1moves = 0
         p1out = 0
@@ -538,6 +554,7 @@ class Game:
         self.printStats(stats)
          
     def printStats(self, stats):
+        # výpis statů
          print(player1.name, "Statistiky")
          print("Počet tahů: ", stats["p1moves"])
          print("Počet vyhozených kamenů: ", stats["p1out"])
@@ -557,6 +574,7 @@ class Game:
         hozeno = False
         gameover = False
         while gameover == False:
+                #zkontrolovaní výhry
                 win = self.check_win()
                 if win != None:
                     winner, gameover = win
@@ -571,6 +589,7 @@ class Game:
                     self.GetStats()
                     gameover = True
                     break 
+                #zkontrolovaní kostky
                 if dices == []:
                      hozeno = False
                 if hozeno ==False:
@@ -644,22 +663,39 @@ class Game:
 
 
                         else:
-                            print("Odkud:")
-                            From = input()
-                            if From =="ulozit":
-                                 self.save(columns)
-                                 print("Odkud:")
-                                 From = int(input())-1
-                            else:
-                                 From = int(From)-1
-                            print("O kolik:")
-                            To = int(input())
+                            From = None
+                            To = None
+                            #ošetření vstupu
+                            while True:
+                                try:
+                                    print("Odkud:")
+                                    From = input()
+                                    if From =="ulozit":
+                                        self.save(columns)
+                                        print("Odkud:")
+                                        From = int(input())-1
+                                    elif int(From):
+                                        From = int(From)-1
+                                        break
+                                except:
+                                    print("Nezadal jsi číslo!")
+                            
+                            
+                            while True:
+                                try:
+                                    print("O kolik:")
+                                    To = int(input())
+                                    break
+                                except:
+                                    print("Nezadal jsi číslo!")
+                            
                             To2 = To
                             i=0
                             contain = False
-
+                            
+                            #kontrola zda vybraný tah hodila kostka
                             while contain == False:
-
+                                
                                 if To == dices[i]:
                                     contain=True
 
@@ -674,14 +710,14 @@ class Game:
                                 if i == len(dices):
                                     print("Špatně vybraný tah!")
                                     break
-
+                            #když kostka obsahuje tah tak se vykoná
                             if contain:      
 
                                 if (player.name == "Player 1" and From < To) or (player.name in ("Player 2", "PlayerAI") and  From > To):
-                                    
+                                    #když je move valid tak se tha odebere z kostky
                                     if self.move(From,To, player):
                                         dices.remove(To2)
-
+                                    #přepne momentální hráče - playe = momenátlní hráč co je na tahu, bylo by fajn to přejmenovat na current_player
                                     if dices == [] and player.name =="Player 1":
                                         self.switch_player(player2)
                                         
@@ -695,6 +731,7 @@ class Game:
                             else:
                                 print("Neplatný tah!")
                 else:
+                    #když nejsou hozený tahy ktere jdou odehrat tak se switchne hráč na tahu
                     if player.name == "Player 1":
                         print("Hozené neplatané tahy")
                         dices = []
